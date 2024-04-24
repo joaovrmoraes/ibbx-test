@@ -1,0 +1,63 @@
+service: project
+app: backend
+
+frameworkVersion: "3"
+
+package:
+  individually: true
+  excludeDevDependencies: true
+
+plugins:
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  stage: ${opt:stage, 'development'}
+  region: ${opt:region, 'us-east-1'}
+  versionFunctions: false
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+
+functions:
+  api:
+    name: API
+    handler: src/handler.main
+    timeout: 29
+    events:
+      - httpApi:
+          method: GET
+          path: /example
+      - httpApi:
+          method: GET
+          path: /assets
+      - httpApi:
+          method: POST
+          path: /assets
+      - httpApi:
+          method: DELETE
+          path: /assets/{assetId}
+      - httpApi:
+          method: GET
+          path: /assets/{assetId}/sensors
+      - httpApi:
+          method: POST
+          path: /assets/{assetId}/sensors
+      - httpApi:
+          method: DELETE
+          path: /assets/{assetId}/sensors/{sensorId}
+      - httpApi:
+          method: GET
+          path: /assets/{assetId}/sensors/{sensorId}
+      - httpApi:
+          method: POST
+          path: /assets/{assetId}/sensors/{sensorId}
+      # Tive que alterar a rota DELETE
+      # Na documentação do teste, solicitava DELETE /assets/{assetId}/sensors/{sensorId}?date={DATE}:
+      # mas o Serverless Framework não suporta a definição de parâmetros de consulta dessa maneira na rota.
+      # Portanto, o parâmetro de consulta 'date' será tratado no código da função Lambda.
+      # Além disso, se eu deixasse sem o '/data' no final, ocorreria um erro de rota DELETE duplicada.
+      - httpApi:
+          method: DELETE
+          path: /assets/{assetId}/sensors/{sensorId}/{DATE}
